@@ -28,22 +28,25 @@ fun main(args: Array<String>) {
             .addSuperclassConstructorParameter("assetId")
             .addSuperclassConstructorParameter("symbol")
             .addSuperclassConstructorParameter("decimals")
+
+    val assetComparator: (Asset) -> Int = { it.objectId.split("\\.".toRegex()).last().toInt() }
+
     ws.addListener(ListAssets("", -1, true, object : WitnessResponseListener {
         override fun onSuccess(p0: WitnessResponse<*>) {
             val assets = p0.result as List<Asset>
             assets
-                    .sortedBy { it.objectId.split("\\.".toRegex()).last().toInt() }
-                    .distinctBy { it.objectId.split("\\.".toRegex()).last().toInt() }
+                    .sortedBy(assetComparator)
+                    .distinctBy(assetComparator)
                     .forEach {
-                val memberName = it.symbol.symbolToFieldName()
-                err.println("Adding ${it.symbol} (${it.objectId}) as $memberName")
-                type.addType(TypeSpec.objectBuilder(memberName)
-                        .superclass(ClassName(pkgName, clsName))
-                        .addSuperclassConstructorParameter("%S", it.objectId)
-                        .addSuperclassConstructorParameter("%S", it.symbol)
-                        .addSuperclassConstructorParameter("%L", it.precision)
-                        .build())
-            }
+                        val memberName = it.symbol.symbolToFieldName()
+                        err.println("Adding ${it.symbol} (${it.objectId}) as $memberName")
+                        type.addType(TypeSpec.objectBuilder(memberName)
+                                .superclass(ClassName(pkgName, clsName))
+                                .addSuperclassConstructorParameter("%S", it.objectId)
+                                .addSuperclassConstructorParameter("%S", it.symbol)
+                                .addSuperclassConstructorParameter("%L", it.precision)
+                                .build())
+                    }
             err.println("===".repeat(10))
             file.addType(type.build())
             StringBuilder().also {
