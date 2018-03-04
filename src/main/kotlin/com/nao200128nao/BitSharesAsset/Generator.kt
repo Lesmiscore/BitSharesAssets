@@ -31,7 +31,10 @@ fun main(args: Array<String>) {
     ws.addListener(ListAssets("", -1, true, object : WitnessResponseListener {
         override fun onSuccess(p0: WitnessResponse<*>) {
             val assets = p0.result as List<Asset>
-            assets.sortedBy { it.objectId.split("\\.".toRegex()).last().toInt() }.forEach {
+            assets
+                    .sortedBy { it.objectId.split("\\.".toRegex()).last().toInt() }
+                    .distinctBy { it.objectId.split("\\.".toRegex()).last().toInt() }
+                    .forEach {
                 val memberName = it.symbol.symbolToFieldName()
                 err.println("Adding ${it.symbol} (${it.objectId}) as $memberName")
                 type.addType(TypeSpec.objectBuilder(memberName)
