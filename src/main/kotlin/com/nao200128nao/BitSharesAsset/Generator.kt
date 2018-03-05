@@ -16,24 +16,24 @@ fun main(args: Array<String>) {
     val pkgName = ""
     val clsName = "BitSharesAsset"
     val localFile = File("./build/bsa.kt")
-    val file = FileSpec.builder(pkgName, clsName)
-    val type = TypeSpec.classBuilder(clsName)
-            .addModifiers(KModifier.SEALED)
-            .superclass(assetClass)
-            .primaryConstructor(FunSpec.constructorBuilder()
-                    .addParameter("assetId", String::class.asClassName())
-                    .addParameter("symbol", String::class.asClassName())
-                    .addParameter("decimals", Int::class.asClassName())
-                    .build())
-            .addSuperclassConstructorParameter("assetId")
-            .addSuperclassConstructorParameter("symbol")
-            .addSuperclassConstructorParameter("decimals")
 
     val assetComparator: (Asset) -> Int = { it.objectId.split("\\.".toRegex()).last().toInt() }
 
     ws.addListener(ListAssets("", -1, true, object : WitnessResponseListener {
         override fun onSuccess(p0: WitnessResponse<*>) {
             val assets = p0.result as List<Asset>
+            val type = TypeSpec.classBuilder(clsName)
+                    .addModifiers(KModifier.SEALED)
+                    .superclass(assetClass)
+                    .primaryConstructor(FunSpec.constructorBuilder()
+                            .addParameter("assetId", String::class.asClassName())
+                            .addParameter("symbol", String::class.asClassName())
+                            .addParameter("decimals", Int::class.asClassName())
+                            .build())
+                    .addSuperclassConstructorParameter("assetId")
+                    .addSuperclassConstructorParameter("symbol")
+                    .addSuperclassConstructorParameter("decimals")
+
             assets
                     .sortedBy(assetComparator)
                     .distinctBy(assetComparator)
@@ -48,9 +48,9 @@ fun main(args: Array<String>) {
                                 .build())
                     }
             err.println("===".repeat(10))
-            file.addType(type.build())
+            val file = FileSpec.builder(pkgName, clsName).addType(type.build()).build()
             StringBuilder().also {
-                file.build().writeTo(it)
+                file.writeTo(it)
                 localFile.writeText(it.toString())
                 println(it)
             }
