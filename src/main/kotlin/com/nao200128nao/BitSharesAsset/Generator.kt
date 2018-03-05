@@ -75,10 +75,11 @@ fun main(args: Array<String>) {
 fun String.symbolToFieldName(): String = when {
     !contains("[^a-zA-Z0-9]".toRegex()) -> toUpperCase()
     else -> {
-        val segments = toLowerCase().split("[^a-z0-9]+".toRegex())
-        (segments.dropLast(1)
-                .map { it.replace("^.".toRegex()) { it.value.toUpperCase() } }
-                + segments.last().toUpperCase()).joinToString("")
+        toLowerCase()
+                .replace("[^a-z0-9]+".toRegex(), ".")
+                .replace("(?:^|\\.)([a-z0-9])".toRegex()) { "." + it.groupValues[1].toUpperCase() }
+                .replace("\\.([A-Za-z0-9]+)$".toRegex()) { it.groupValues[1].toUpperCase() }
+                .replace(".", "")
     }
 }.run {
     when {
